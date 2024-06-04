@@ -1,0 +1,177 @@
+### Step 1: Create the Text File with Sample Records
+
+Create a text file named `crewMembers.txt` with 100 sample records:
+
+```
+John Doe,john.doe@example.com,Astrobiology
+Jane Smith,jane.smith@example.com,Exobiology
+James Brown,james.brown@example.com,Xenobiology
+Mary Johnson,mary.johnson@example.com,Astrochemistry
+Robert Jones,robert.jones@example.com,Molecular engineering
+Linda Davis,linda.davis@example.com,Metamaterials
+Michael Wilson,michael.wilson@example.com,Programmable matter
+Sarah Miller,sarah.miller@example.com,Psionic technology
+David Martinez,david.martinez@example.com,Dimensional manipulation
+Laura Garcia,laura.garcia@example.com,Consciousness interfacing
+Kevin Anderson,kevin.anderson@example.com,Xenoarchaeology
+Karen Thomas,karen.thomas@example.com,Quantum computing
+Matthew Jackson,matthew.jackson@example.com,Transwarp propulsion
+Patricia White,patricia.white@example.com,Terraforming
+Daniel Harris,daniel.harris@example.com,Xenolinguistics
+Barbara Clark,barbara.clark@example.com,Astrobiology
+Paul Lewis,paul.lewis@example.com,Exobiology
+Nancy Robinson,nancy.robinson@example.com,Xenobiology
+Mark Walker,mark.walker@example.com,Astrochemistry
+Sandra Young,sandra.young@example.com,Molecular engineering
+John Smith,john.smith@example.com,Metamaterials
+Lisa Johnson,lisa.johnson@example.com,Programmable matter
+James White,james.white@example.com,Psionic technology
+Michael Brown,michael.brown@example.com,Dimensional manipulation
+Emily Davis,emily.davis@example.com,Consciousness interfacing
+David Wilson,david.wilson@example.com,Xenoarchaeology
+Sarah Martinez,sarah.martinez@example.com,Quantum computing
+Jessica Lee,jessica.lee@example.com,Transwarp propulsion
+Daniel Anderson,daniel.anderson@example.com,Terraforming
+Laura Thomas,laura.thomas@example.com,Xenolinguistics
+Nancy Jackson,nancy.jackson@example.com,Astrobiology
+Paul Walker,paul.walker@example.com,Exobiology
+Karen Lewis,karen.lewis@example.com,Xenobiology
+Sandra Harris,sandra.harris@example.com,Astrochemistry
+Emily Clark,emily.clark@example.com,Molecular engineering
+James Robinson,james.robinson@example.com,Metamaterials
+Michael Young,michael.young@example.com,Programmable matter
+Linda Jackson,linda.jackson@example.com,Psionic technology
+Barbara Lee,barbara.lee@example.com,Dimensional manipulation
+Mark Davis,mark.davis@example.com,Consciousness interfacing
+Kevin Martinez,kevin.martinez@example.com,Xenoarchaeology
+Lisa Brown,lisa.brown@example.com,Quantum computing
+Patricia White,patricia.white@example.com,Transwarp propulsion
+John Harris,john.harris@example.com,Terraforming
+David Clark,david.clark@example.com,Xenolinguistics
+James Walker,james.walker@example.com,Astrobiology
+Michael Martinez,michael.martinez@example.com,Exobiology
+Nancy Davis,nancy.davis@example.com,Xenobiology
+Linda Lee,linda.lee@example.com,Astrochemistry
+Paul Brown,paul.brown@example.com,Molecular engineering
+Barbara Wilson,barbara.wilson@example.com,Metamaterials
+David Johnson,david.johnson@example.com,Programmable matter
+Sarah Smith,sarah.smith@example.com,Psionic technology
+Jessica Harris,jessica.harris@example.com,Dimensional manipulation
+Daniel Clark,daniel.clark@example.com,Consciousness interfacing
+John Lewis,john.lewis@example.com,Xenoarchaeology
+Kevin White,kevin.white@example.com,Quantum computing
+Laura Robinson,laura.robinson@example.com,Transwarp propulsion
+Michael Anderson,michael.anderson@example.com,Terraforming
+Nancy Martinez,nancy.martinez@example.com,Xenolinguistics
+James Harris,james.harris@example.com,Astrobiology
+Sandra Johnson,sandra.johnson@example.com,Exobiology
+David Lee,david.lee@example.com,Xenobiology
+Karen Walker,karen.walker@example.com,Astrochemistry
+Paul Young,paul.young@example.com,Molecular engineering
+Barbara Martinez,barbara.martinez@example.com,Metamaterials
+Kevin Jackson,kevin.jackson@example.com,Programmable matter
+Sarah Robinson,sarah.robinson@example.com,Psionic technology
+James Brown,james.brown@example.com,Dimensional manipulation
+Linda Harris,linda.harris@example.com,Consciousness interfacing
+Mark Clark,mark.clark@example.com,Xenoarchaeology
+Nancy Smith,nancy.smith@example.com,Quantum computing
+John Davis,john.davis@example.com,Transwarp propulsion
+Jessica Martinez,jessica.martinez@example.com,Terraforming
+Kevin Johnson,kevin.johnson@example.com,Xenolinguistics
+David White,david.white@example.com,Astrobiology
+Emily Brown,emily.brown@example.com,Exobiology
+Paul Martinez,paul.martinez@example.com,Xenobiology
+Sandra Lee,sandra.lee@example.com,Astrochemistry
+Michael Jackson,michael.jackson@example.com,Molecular engineering
+Linda White,linda.white@example.com,Metamaterials
+Barbara Johnson,barbara.johnson@example.com,Programmable matter
+Jessica Smith,jessica.smith@example.com,Psionic technology
+Nancy Anderson,nancy.anderson@example.com,Dimensional manipulation
+David Robinson,david.robinson@example.com,Consciousness interfacing
+Paul Harris,paul.harris@example.com,Xenoarchaeology
+Linda Davis,linda.davis@example.com,Quantum computing
+Mark Lewis,mark.lewis@example.com,Transwarp propulsion
+Sarah Young,sarah.young@example.com,Terraforming
+James Jackson,james.jackson@example.com,Xenolinguistics
+
+
+### Step 2: Create the Mongoose Script to Insert Documents
+
+Create a file named `insertCrewMembers.js` with the following content:
+
+```javascript
+const mongoose = require('mongoose');
+const fs = require('fs');
+const readline = require('readline');
+
+// MongoDB Cloud URI
+const uri = "mongodb+srv://petersigurdson:EdHurHzNyIJ5h4se@cluster0.vbtw6ws.mongodb.net/mydatabase?retryWrites=true&w=majority&appName=Cluster0";
+
+// Connect to MongoDB
+mongoose.connect(uri).then(() => {
+  console.log('Connected to MongoDB Cloud');
+  insertCrewMembers();
+}).catch((err) => {
+  console.error('Connection error', err);
+});
+
+// Define CrewMember Schema
+const crewMemberSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  age: Number,
+  specialty: String
+}, { collection: 'crewMembers' });
+
+const CrewMember = mongoose.model('CrewMember', crewMemberSchema);
+
+// Function to insert crew members from the text file
+const insertCrewMembers = async () => {
+  const fileStream = fs.createReadStream('crewMembers.txt');
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity
+  });
+
+  const crewMembers = [];
+
+  for await (const line of rl) {
+    const [name, email, specialty] = line.split(',');
+    // Generating a random age between 25 and 40 for the crew members
+    const age = Math.floor(Math.random() * (40 - 25 + 1)) + 25;
+    crewMembers.push({ name, email, age, specialty });
+  }
+
+  try {
+    const result = await CrewMember.insertMany(crewMembers);
+    console.log('Crew members inserted:', result);
+  } catch (err) {
+    console.error('Error inserting crew members:', err);
+  } finally {
+    // Close the database connection
+    mongoose.connection.close().then(() => {
+      console.log('Mongoose connection closed');
+    }).catch(err => {
+      console.error('Error closing connection:', err);
+    });
+  }
+};
+```
+
+### Explanation
+
+1. **Connect to MongoDB**: The script connects to your MongoDB Cloud instance using Mongoose.
+2. **Define Schema and Model**: A `CrewMember` schema and model are defined, with an additional `specialty` field.
+3. **Read and Parse File**: The `insertCrewMembers` function reads the `crewMembers.txt` file line by line, splits each line into name, email, and specialty, and assigns a random age between 25 and 40 to each crew member.
+4. **Insert Documents**: The `insertMany` method is used to insert all crew member records into the MongoDB collection.
+5. **Error Handling and Connection Closure**: Errors are caught and logged, and the MongoDB connection is closed after the operation.
+
+### Running the Program
+
+Ensure you have the `crewMembers.txt` file in the same directory as `insertCrewMembers.js`, and then run the script with:
+
+```bash
+node insertCrewMembers.js
+```
+
+This will read the text file, insert the records into the MongoDB collection, and then close the connection.
