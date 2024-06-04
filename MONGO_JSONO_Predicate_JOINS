@@ -1,0 +1,136 @@
+Predicate Joins: Implementation of the Mongoose Aggregation Pipeline to deliver JSON predicate JOINS
+
+To illustrate how to perform operations in MongoDB and Mongoose that would be akin to predicate joins in SQL, let’s see how to use MongoDB's aggregation framework along with Mongoose's `populate` method. 
+
+The goal is to create a Crew Manifest by assigning crew members to starships based on their skills and the skills required by the ships' missions.
+
+
+
+Here's a step-by-step guide to demonstrate this:
+
+### Step 1: Define the Schemas
+
+We need to define two schemas: one for crew members and one for starships.
+
+```javascript
+const mongoose = require('mongoose');
+
+// MongoDB Cloud URI
+const uri = "mongodb+srv://petersigurdson:EdHurHzNyIJ5h4se@cluster0.vbtw6ws.mongodb.net/mydatabase?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(uri).then(() => {
+  console.log('Connected to MongoDB Cloud');
+}).catch((err) => {
+  console.error('Connection error', err);
+});
+
+// Define CrewMember Schema
+const crewMemberSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  age: Number,
+  specialty: String
+}, { collection: 'crewMembers' });
+
+const CrewMember = mongoose.model('CrewMember', crewMemberSchema);
+
+// Define Starship Schema
+const starshipSchema = new mongoose.Schema({
+  name: String,
+  destination: String,
+  specialtiesNeeded: [String],
+  crew: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CrewMember' }]
+}, { collection: 'starships' });
+
+const Starship = mongoose.model('Starship', starshipSchema);
+```
+
+### Step 2: Insert Sample Data
+
+Use the previous scripts to insert sample crew members and starships into the database.
+
+### Step 3: Assign Crew Members to Starships Based on Skills
+
+We will create a function that assigns crew members to starships based on the specialties required by the starships.
+
+```javascript
+const assignCrewToStarships = async () => {
+  try {
+    const starships = await Starship.find();
+    const crewMembers = await CrewMember.find();
+
+    for (const starship of starships) {
+      const assignedCrew = [];
+
+      for (const specialty of starship.specialtiesNeeded) {
+        const matchingCrewMembers = crewMembers.filter(crew => crew.specialty === specialty);
+
+        for (const crew of matchingCrewMembers) {
+          if (!assignedCrew.includes(crew._id)) {
+            assignedCrew.push(crew._id);
+            if (assignedCrew.length >= starship.specialtiesNeeded.length) break;
+          }
+        }
+      }
+
+      starship.crew = assignedCrew;
+      await starship.save();
+    }
+
+    console.log('Crew members assigned to starships successfully.');
+  } catch (err) {
+    console.error('Error assigning crew members to starships:', err);
+  } finally {
+    mongoose.connection.close().then(() => {
+      console.log('Mongoose connection closed');
+    }).catch(err => {
+      console.error('Error closing connection:', err);
+    });
+  }
+};
+
+assignCrewToStarships();
+```
+
+### Explanation
+
+1. **Fetch Starships and Crew Members**: The function fetches all starships and crew members from the database.
+2. **Match Crew Members with Starship Needs**: For each starship, it filters crew members based on the specialties needed by the starship.
+3. **Assign Crew Members to Starship**: It assigns crew members to the starship and saves the updated starship back to the database.
+
+### Step 4: Display the Crew Manifest
+
+To display the crew manifest, use Mongoose's `populate` method to fetch starships along with their assigned crew members.
+
+```javascript
+const displayCrewManifest = async () => {
+  try {
+    const starships = await Starship.find().populate('crew');
+    
+    starships.forEach(starship => {
+      console.log(`Starship: ${starship.name}`);
+      console.log(`Destination: ${starship.destination}`);
+      console.log('Crew:');
+      starship.crew.forEach(crewMember => {
+        console.log(`- ${crewMember.name}, Specialty: ${crewMember.specialty}`);
+      });
+      console.log('---------------------------------------');
+    });
+  } catch (err) {
+    console.error('Error displaying crew manifest:', err);
+  } finally {
+    mongoose.connection.close().then(() => {
+      console.log('Mongoose connection closed');
+    }).catch(err => {
+      console.error('Error closing connection:', err);
+    });
+  }
+};
+
+displayCrewManifest();
+```
+
+### Explanation
+
+1. **Fetch Starships with Crew Members**: The function uses `populate` to fetch starships along with their assigned crew members.
+2. **Display Crew Manifest**: It iterates over each starship and prints the starship details along with the assigned crew members.
