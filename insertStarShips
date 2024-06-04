@@ -1,0 +1,71 @@
+const mongoose = require('mongoose');
+
+// MongoDB Cloud URI
+const uri = "mongodb+srv://petersigurdson:EdHurHzNyIJ5h4se@cluster0.vbtw6ws.mongodb.net/mydatabase?retryWrites=true&w=majority&appName=Cluster0";
+
+// Connect to MongoDB
+mongoose.connect(uri).then(() => {
+  console.log('Connected to MongoDB Cloud');
+  insertStarships();
+}).catch((err) => {
+  console.error('Connection error', err);
+});
+
+// Define Starship Schema
+const starshipSchema = new mongoose.Schema({
+  name: String,
+  destination: String,
+  specialtiesNeeded: [String]
+}, { collection: 'starships' });
+
+const Starship = mongoose.model('Starship', starshipSchema);
+
+// Function to insert starships
+const insertStarships = async () => {
+  const starships = [
+    {
+      name: 'UEEC Voyager',
+      destination: 'Alpha Centauri',
+      specialtiesNeeded: ['Astrobiology', 'Xenolinguistics', 'Quantum computing']
+    },
+    {
+      name: 'UEEC Explorer',
+      destination: 'Proxima Centauri',
+      specialtiesNeeded: ['Exobiology', 'Psionic technology', 'Transwarp propulsion']
+    },
+    {
+      name: 'UEEC Odyssey',
+      destination: 'Sirius',
+      specialtiesNeeded: ['Xenobiology', 'Dimensional manipulation', 'Terraforming']
+    },
+    {
+      name: 'UEEC Pioneer',
+      destination: 'Betelgeuse',
+      specialtiesNeeded: ['Astrochemistry', 'Consciousness interfacing', 'Xenoarchaeology']
+    },
+    {
+      name: 'UEEC Discovery',
+      destination: 'Vega',
+      specialtiesNeeded: ['Molecular engineering', 'Programmable matter', 'Metamaterials']
+    },
+    {
+      name: 'UEEC Enterprise',
+      destination: 'Andromeda',
+      specialtiesNeeded: ['Psionic technology', 'Metamaterials', 'Quantum computing']
+    }
+  ];
+
+  try {
+    const result = await Starship.insertMany(starships);
+    console.log('Starships inserted:', result);
+  } catch (err) {
+    console.error('Error inserting starships:', err);
+  } finally {
+    // Close the database connection
+    mongoose.connection.close().then(() => {
+      console.log('Mongoose connection closed');
+    }).catch(err => {
+      console.error('Error closing connection:', err);
+    });
+  }
+};
